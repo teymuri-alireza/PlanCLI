@@ -4,10 +4,20 @@
 using Terminal.Gui;
 using Terminal.Gui.Graphs;
 using TaskCLI.Models;
-using System.Text.Json;
 
 class Program
-{ 
+{
+    // make tasksWindow accessible from NewTask
+    static Label? tasksWindow;
+    // helper to refresh the tasks label from the database
+    public static void RefreshTasksWindow(DatabaseController db)
+    {
+        var tasksText = string.Join("\n", db.Items.Select(t => $"{t.Title} - {t.Description}"));
+        if (tasksWindow != null) 
+        { 
+            tasksWindow.Text = tasksText; 
+        }
+    }
     static void Main(string[] args)
     {
         var day = DateTime.Now;
@@ -59,7 +69,7 @@ class Program
             Orientation = Orientation.Horizontal
         };
         string tasksText = string.Join("\n", db.Items.Select(t => $"{t.Title} - {t.Description}"));
-        var tasksWindow = new Label(tasksText)
+        tasksWindow = new Label(tasksText)
         {
             X = 1,
             Y = 4,
@@ -117,6 +127,8 @@ class Program
             // logic to save into database
             db.Items.Add(newTask);
             db.Save();
+            // refresh UI so tasksWindow shows the new item
+            RefreshTasksWindow(db);
 
             Application.RequestStop(); // close dialog
         };
