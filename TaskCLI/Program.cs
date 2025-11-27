@@ -142,12 +142,16 @@ class Program
         var doneColor = new ColorScheme()
         {
             Normal = Application.Driver.MakeAttribute(Color.DarkGray, Color.Black),
-            Focus = Application.Driver.MakeAttribute(Color.DarkGray, Color.Black),
+            HotNormal = Application.Driver.MakeAttribute(Color.DarkGray, Color.Black),
+            Focus = Application.Driver.MakeAttribute(Color.BrightYellow, Color.Black),
+            HotFocus = Application.Driver.MakeAttribute(Color.BrightYellow, Color.Black),
         };
         var notDoneColor = new ColorScheme()
         {
             Normal = Application.Driver.MakeAttribute(Color.White, Color.Black),
-            Focus = Application.Driver.MakeAttribute(Color.White, Color.Black),
+            HotNormal = Application.Driver.MakeAttribute(Color.White, Color.Black),
+            Focus = Application.Driver.MakeAttribute(Color.BrightYellow, Color.Black),
+            HotFocus = Application.Driver.MakeAttribute(Color.BrightYellow, Color.Black),
         };
 
         container?.RemoveAll();
