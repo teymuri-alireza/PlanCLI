@@ -2,9 +2,9 @@
 // and needs to be modified later
 
 using Terminal.Gui;
-using Terminal.Gui.Graphs;
 using TaskCLI.Models;
-using System.Data.Common;
+using System.Text.Json;
+using System.ComponentModel.DataAnnotations;
 
 class Program
 {
@@ -44,8 +44,17 @@ class Program
             {
                 new("_New", "", () =>
                 {
-                    NewTask(db);
+                    NewTask(db, win);
                 }) 
+            }),
+            new("_Theme", new MenuItem[]
+            {
+               new("Light", "", () => {
+                   ChangeTheme("light", win, db);
+               }),
+               new("Dark", "", () => {
+                   ChangeTheme("dark", win, db);
+               }),
             }),
         ]);
         var dayOfTheWeek = new Label(day.ToString("dddd") + " - " + day.ToString("M"))
@@ -61,11 +70,14 @@ class Program
             Height = Dim.Fill()
         };
         // build checkbox
-        BuildCheckBoxList(db);
+        BuildCheckBoxList(db, win);
 
         win.Add(dayOfTheWeek,  container);
         top.Add(menu);
         top.Add(win);
+
+        var currentTheme = GetUserSetting();
+        ChangeTheme(currentTheme, win, db);
 
         Application.Run();
         Application.Shutdown();
@@ -73,7 +85,7 @@ class Program
         Console.ResetColor();
     }
 
-    public static void NewTask(DatabaseController db)
+    public static void NewTask(DatabaseController db, Window window)
     {
         var dialog = new Dialog("Add Task", 60, 10);
         var titleLabel = new Label("Title:")
@@ -123,7 +135,7 @@ class Program
             db.Items.Add(newTask);
             db.Save();
             // refresh UI
-            BuildCheckBoxList(db);
+            BuildCheckBoxList(db, window);
 
             Application.RequestStop(); // close dialog
         };
@@ -137,21 +149,23 @@ class Program
         Application.Run(dialog);
     }
 
-    public static void BuildCheckBoxList(DatabaseController db)
+    public static void BuildCheckBoxList(DatabaseController db, Window window)
     {
+        var windowBackgroundColor = window.GetNormalColor().Background;
+        var windowForegroundColor = window.GetNormalColor().Foreground;
         var doneColor = new ColorScheme()
         {
-            Normal = Application.Driver.MakeAttribute(Color.DarkGray, Color.Black),
-            HotNormal = Application.Driver.MakeAttribute(Color.DarkGray, Color.Black),
-            Focus = Application.Driver.MakeAttribute(Color.BrightYellow, Color.Black),
-            HotFocus = Application.Driver.MakeAttribute(Color.BrightYellow, Color.Black),
+            Normal = Application.Driver.MakeAttribute(Color.DarkGray, windowBackgroundColor),
+            HotNormal = Application.Driver.MakeAttribute(Color.DarkGray, windowBackgroundColor),
+            Focus = Application.Driver.MakeAttribute(Color.BrightYellow, windowBackgroundColor),
+            HotFocus = Application.Driver.MakeAttribute(Color.BrightYellow, windowBackgroundColor),
         };
         var notDoneColor = new ColorScheme()
         {
-            Normal = Application.Driver.MakeAttribute(Color.White, Color.Black),
-            HotNormal = Application.Driver.MakeAttribute(Color.White, Color.Black),
-            Focus = Application.Driver.MakeAttribute(Color.BrightYellow, Color.Black),
-            HotFocus = Application.Driver.MakeAttribute(Color.BrightYellow, Color.Black),
+            Normal = Application.Driver.MakeAttribute(windowForegroundColor, windowBackgroundColor),
+            HotNormal = Application.Driver.MakeAttribute(windowForegroundColor, windowBackgroundColor),
+            Focus = Application.Driver.MakeAttribute(Color.BrightYellow, windowBackgroundColor),
+            HotFocus = Application.Driver.MakeAttribute(Color.BrightYellow, windowBackgroundColor),
         };
 
         container?.RemoveAll();
@@ -174,5 +188,38 @@ class Program
 
             container?.Add(checkbox);
         }
+    }
+
+    public static void ChangeTheme(string themeColor, Window window, DatabaseController db)
+    {
+        if (themeColor == "light")
+        {
+            window.ColorScheme = new ColorScheme
+            {
+                Normal = Application.Driver.MakeAttribute(Color.Black, Color.White),
+            };
+        }
+        else
+        {
+            window.ColorScheme = new ColorScheme
+            {
+                Normal = Application.Driver.MakeAttribute(Color.White, Color.Black),
+            };
+        }
+        BuildCheckBoxList(db, window);
+        
+        var newTheme = new UserSetting() { Theme = themeColor };
+        var fileName = "userSettings.json".ToString();
+        var options = new JsonSerializerOptions { WriteIndented = true };
+        string jsonString = JsonSerializer.Serialize(newTheme, options);
+        File.WriteAllText(fileName, jsonString);
+    }
+
+    public static string GetUserSetting()
+    {
+        var fileName = "userSettings.json".ToString();
+        string jsonString = File.ReadAllText(fileName);
+        UserSetting? currentTheme = JsonSerializer.Deserialize<UserSetting>(jsonString)!;
+        return currentTheme.Theme;
     }
 }
