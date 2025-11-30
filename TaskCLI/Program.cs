@@ -1,11 +1,10 @@
-﻿// This is a simple example from Terminal Gui documanets
-// and needs to be modified later
+﻿// This is a simple terminal based to-do list app
+// written in c#
+// This app requires more update and modifications
 
 using Terminal.Gui;
 using TaskCLI.Models;
 using System.Text.Json;
-using System.ComponentModel.DataAnnotations;
-using System.Threading.Tasks.Sources;
 
 class Program
 {
@@ -13,9 +12,13 @@ class Program
     static FrameView? container;
     static void Main(string[] args)
     {
+        // manage settings & database file if it doesn't exist
+        if (!File.Exists("tasks.json")) { File.WriteAllText("tasks.json", "[]");}
+        if (!File.Exists("userSettings.json")) { File.WriteAllText("userSettings.json", "{\"Theme\": \"dark\"}");}
+
         var day = DateTime.Now;
         var db = new DatabaseController("tasks.json");
-        // main function
+
         Application.Init();
 
         Colors.Base.Normal = Application.Driver.MakeAttribute(Color.White, Color.Black);
@@ -80,10 +83,10 @@ class Program
         win.Add(dayOfTheWeek,  container);
         top.Add(menu);
         top.Add(win);
-
+        // checking user's current theme
         var currentTheme = GetUserSetting();
         ChangeTheme(currentTheme, win, db);
-
+        // running the application & handle exiting
         Application.Run();
         Application.Shutdown();
 
@@ -122,7 +125,7 @@ class Program
         var ok = new Button("OK");
         ok.Clicked += () =>
         {
-            // inputs can not be null
+            // checks if inputs are empty
             if (
                 string.IsNullOrWhiteSpace(titleInput.Text.ToString()) || 
                 string.IsNullOrWhiteSpace(descriptionInput.Text.ToString())
@@ -156,8 +159,10 @@ class Program
 
     public static void BuildCheckBoxList(DatabaseController db, Window window)
     {
+        // getting current window colors
         var windowBackgroundColor = window.GetNormalColor().Background;
         var windowForegroundColor = window.GetNormalColor().Foreground;
+        
         var doneColor = new ColorScheme()
         {
             Normal = Application.Driver.MakeAttribute(Color.DarkGray, windowBackgroundColor),
@@ -182,7 +187,7 @@ class Program
             {
                 X = 1,
                 Y = y++,
-                ColorScheme = task.IsDone ? doneColor : notDoneColor
+                ColorScheme = task.IsDone ? doneColor : notDoneColor // color changes based on IsDone
             };
             checkbox.Toggled += (prev) =>
             {
@@ -221,8 +226,9 @@ class Program
                 Normal = Application.Driver.MakeAttribute(Color.White, Color.Black),
             };
         }
+        // Refresh UI
         BuildCheckBoxList(db, window);
-        
+        // save new theme into settings file
         var newTheme = new UserSetting() { Theme = themeColor };
         var fileName = "userSettings.json".ToString();
         var options = new JsonSerializerOptions { WriteIndented = true };
