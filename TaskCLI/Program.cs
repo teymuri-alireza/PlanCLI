@@ -132,19 +132,18 @@ class Program
         var ok = new Button("OK");
         ok.Clicked += () =>
         {
-            // checks if inputs are empty
-            if (
-                string.IsNullOrWhiteSpace(titleInput.Text.ToString()) || 
-                string.IsNullOrWhiteSpace(descriptionInput.Text.ToString())
-                )
+            var titleValue = titleInput.Text.ToString();
+            var descriptionValue = descriptionInput.Text.ToString();
+            // checks if title input is empty
+            if (string.IsNullOrWhiteSpace(titleValue))
             {
-                MessageBox.ErrorQuery("Validation", "Title and Description are required.", "OK");
+                MessageBox.ErrorQuery("Validation", "Title is required.", "OK");
                 return;
             }
             var newTask = new TodoItem
             {
-                Title = titleInput.Text.ToString(),
-                Description = descriptionInput.Text.ToString()
+                Title = titleValue,
+                Description = !string.IsNullOrWhiteSpace(descriptionValue) ? descriptionValue : ""
             };
             // logic to save into database
             db.Items.Add(newTask);
@@ -190,7 +189,7 @@ class Program
         int y = 0;
         foreach (var task in db.Items)
         {
-            var checkbox = new CheckBox($" {task.Title} - {task.Description}", task.IsDone)
+            var checkbox = new CheckBox($" {task.Title} {task.Description}", task.IsDone)
             {
                 X = 1,
                 Y = y++,

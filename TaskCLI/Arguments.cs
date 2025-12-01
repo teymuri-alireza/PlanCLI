@@ -36,18 +36,16 @@ class Arguments
 
     static void AddNewTask(string[] args, DatabaseController db)
     {
-        if (args.Length < 3)
+        if (args.Length < 2)
         {
             Console.WriteLine("Error: missing task title & description.");
             return;
         }
         string title = args[1];
-        string description = args[2];
 
         db.Items.Add(new TodoItem
         {
             Title = title,
-            Description = description
         });
 
         db.Save();
@@ -57,8 +55,8 @@ class Arguments
     static void PrintHelp()
     {
         Console.WriteLine("taskcli usage:");
-        Console.WriteLine("  dotnet run             \t\t\tRun interactive mode (TUI)");
-        Console.WriteLine("  dotnet run -- -l       \t\t\tList tasks");
-        Console.WriteLine("  dotnet run -- -n \"title\" \"description\"  \tAdd new task");
+        Console.WriteLine("  dotnet run             \tRun interactive mode (TUI)");
+        Console.WriteLine("  dotnet run -- -l       \tList tasks");
+        Console.WriteLine("  dotnet run -- -n \"title\"\tAdd new task");
     }
 }
