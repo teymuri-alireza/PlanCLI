@@ -1,4 +1,4 @@
-# TaskCLI
+# PlanCLI
 A cross-platform terminal-based to-do list application written in C#, built using **Terminal.GUI**
 
 # Features

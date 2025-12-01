@@ -1,6 +1,6 @@
 using System.Text.Json;
 
-namespace TaskCLI.Models;
+namespace PlanCLI.Models;
 
 public class DatabaseController
 {

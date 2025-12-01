@@ -3,7 +3,7 @@
 // This app requires more update and modifications
 
 using Terminal.Gui;
-using TaskCLI.Models;
+using PlanCLI.Models;
 using System.Text.Json;
 
 class Program
@@ -31,7 +31,7 @@ class Program
         Colors.Base.Normal = Application.Driver.MakeAttribute(Color.White, Color.Black);
 
         var top = Application.Top;
-        var win = new Window("TaskCLI")
+        var win = new Window("PlanCLI")
         {
             X = 0,
             Y = 1,

@@ -1,4 +1,4 @@
-using TaskCLI.Models;
+using PlanCLI.Models;
 
 class Arguments
 {
@@ -68,7 +68,7 @@ class Arguments
 
     static void PrintHelp()
     {
-        Console.WriteLine("taskcli usage:");
+        Console.WriteLine("plancli usage:");
         Console.WriteLine("  dotnet run             \tRun interactive mode (TUI)");
         Console.WriteLine("  dotnet run -- -l       \tList tasks");
         Console.WriteLine("  dotnet run -- -n \"title\"\tAdd new task");

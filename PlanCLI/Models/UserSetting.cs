@@ -1,4 +1,4 @@
-namespace TaskCLI.Models;
+namespace PlanCLI.Models;
 
 public class UserSetting
 {
