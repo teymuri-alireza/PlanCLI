@@ -18,6 +18,10 @@ class Arguments
             case "--new":
                 AddNewTask(args, db);
                 break;
+            case "-r":
+            case "--reset":
+                ResetTask(db);
+                break;
             
             default:
                 Console.WriteLine("Unkown Option.");
@@ -50,6 +54,16 @@ class Arguments
 
         db.Save();
         Console.WriteLine("Task added");
+    }
+
+    static void ResetTask(DatabaseController db)
+    {
+        string fileName = "tasks.json";
+        File.WriteAllText(fileName, "[]");
+        // Refresh UI
+        db.Load();
+        db.Save();
+        Console.WriteLine("Tasks reset successfully");
     }
 
     static void PrintHelp()
