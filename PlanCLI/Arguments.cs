@@ -18,13 +18,17 @@ class Arguments
             case "--new":
                 AddNewTask(args, db);
                 break;
-            case "-r":
-            case "--reset":
-                ResetTask(db);
-                break;
             case "-c":
             case "--check":
                 CheckTheTask(args, db);
+                break;
+            case "-d":
+            case "--delete":
+                DeleteTask(args, db);
+                break;
+            case "-r":
+            case "--reset":
+                ResetTask(db);
                 break;
             default:
                 Console.WriteLine("Unkown Option.");
@@ -80,6 +84,7 @@ class Arguments
             {
                 taskToDelete.IsDone = true;
                 db.Save();
+                ListTasks(db);
             }
             else
             {
@@ -91,6 +96,21 @@ class Arguments
         {
             Console.WriteLine("Error: task Id is not an integer!");
             return;
+        }
+    }
+
+    static void DeleteTask(string[] args, DatabaseController db)
+    {
+        if (args.Length < 2)
+        {
+            Console.WriteLine("Error: missing task Id.");
+            return;
+        }
+        var item = db.Items.FirstOrDefault(t => t.Id == int.Parse(args[1]));
+        if (!string.IsNullOrEmpty(item?.Title)) {
+            db.Delete(item);
+            Console.WriteLine("Task deleted successfully.");
+            ListTasks(db);
         }
     }
 
@@ -110,6 +130,7 @@ class Arguments
         Console.WriteLine("  dotnet run -- -l       \tList tasks");
         Console.WriteLine("  dotnet run -- -n \"title\"\tAdd new task");
         Console.WriteLine("  dotnet run -- -c Id      \tcheck a task as complete");
+        Console.WriteLine("  dotnet run -- -d Id      \tdelete a task");
         Console.WriteLine("  dotnet run -- -r       \tReset tasks list");
     }
 }
