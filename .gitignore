@@ -17,6 +17,8 @@ publish/
 *.suo
 *.userosscache
 *.sln.docstates
+tasks.json
+userSettings.json
 
 ## NuGet Packages
 *.nupkg
