@@ -284,8 +284,20 @@ class Program
         var cancel = new Button("Cancel");
         cancel.Clicked += () => Application.RequestStop();
 
+        var delete = new Button("Delete");
+        delete.Clicked += () =>
+        {
+            var item = db.Items.FirstOrDefault(t => t.Id == task.Id);
+            if (!string.IsNullOrEmpty(item?.Title)) {
+                db.Delete(item);
+                Application.RequestStop();
+                BuildCheckBoxList(db, window);
+            }
+        };
+
         dialog.AddButton(save);
         dialog.AddButton(cancel);
+        dialog.AddButton(delete);
 
         Application.Run(dialog);
     }
