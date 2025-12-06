@@ -1,12 +1,12 @@
 # PlanCLI
-A cross-platform terminal-based to-do list application written in C#, built using **Terminal.GUI**
+A cross-platform terminal-based to-do list application written in C#, built using both **Terminal.GUI** and **Spectre.Console**
 
 # Features
 
-1. JSON-based local database for storing tasks.
-2. Clean, minimal terminal interface.
-3. Cross-platform support (Windows, Linux, macOS).
-4. Custom themes for light and dark modes
+1. Supports both TUI mode and CLI mode
+2. JSON-based local database for storing tasks.
+3. Clean, minimal terminal interface.
+4. Cross-platform support (Windows, Linux, macOS).
 
 # Planned Features
 
@@ -17,19 +17,26 @@ A cross-platform terminal-based to-do list application written in C#, built usin
 
 # Usage
 
-Run interactive mode (TUI)
+Choose the default mode first
 
+- TUI mode
+```bash
+dotnet run -- --mode tui
+```
+
+- CLI mode
+```bash
+dotnet run -- --mode cli
+```
+
+Run the application
 ```bash
 dotnet run
 ```
 
-Run with command-line arguments
-
-```bash
-dotnet run -- --help
-```
-
 NOTE: executable files will be created for easier access
+
+NOTE: This application uses .net 8
 
 # Contribution
 
