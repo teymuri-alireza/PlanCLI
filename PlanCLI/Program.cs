@@ -42,36 +42,6 @@ class Program
                 Normal = Application.Driver.MakeAttribute(Color.White, Color.Black),
             }
         };
-        var menu = new MenuBar(
-        [
-            new("_File", new MenuItem[]
-            {
-                new("_Exit", "", () =>
-                {
-                    Application.RequestStop();
-                }) 
-            }),
-            new("_Task", new MenuItem[]
-            {
-                new("_New", "", () =>
-                {
-                    NewTask(db, win);
-                }),
-                new("_Reset", "", () =>
-                {
-                    ResetTask(db, win);
-                }),
-            }),
-            new("_Theme", new MenuItem[]
-            {
-               new("Light", "", () => {
-                   ChangeTheme("light", win, db);
-               }),
-               new("Dark", "", () => {
-                   ChangeTheme("dark", win, db);
-               }),
-            }),
-        ]);
         var dayOfTheWeek = new Label(day.ToString("dddd") + " - " + day.ToString("M"))
         {
             X = Pos.Center(),
@@ -87,9 +57,22 @@ class Program
         // build checkbox
         BuildCheckBoxList(db, win);
 
+        var statusBar = new StatusBar(
+            [
+                new StatusItem(Key.CtrlMask | Key.X, "~^X~ Exit", () => Application.RequestStop()),
+                new StatusItem(Key.CtrlMask | Key.N, "~^N~ New Task", () => NewTask(db, win)),
+                new StatusItem(Key.CtrlMask | Key.R, "~^R~ Clear Screen", () => ResetTask(db, win)),
+                new StatusItem(Key.CtrlMask | Key.T, "~^T~ Change Theme", () => OpenChangeTheme(db, win)),
+                new StatusItem(Key.CtrlMask | Key.H, "~^H~ Help", () => ShowHelp()),
+            ]);
+        statusBar.ColorScheme = new ColorScheme()
+        {
+            Normal = Application.Driver.MakeAttribute(Color.White, Color.Black)
+        };
+
         win.Add(dayOfTheWeek,  container);
-        top.Add(menu);
         top.Add(win);
+        top.Add(statusBar);
         // checking user's current theme
         var currentTheme = GetUserSetting();
         ChangeTheme(currentTheme, win, db);
@@ -258,13 +241,11 @@ class Program
         {
             if (kb.KeyEvent.Key == Key.Enter)
             {
-                isDoneCheckBox = new CheckBox("Mark as Done", task.IsDone)
-                {
-                    X = 1,
-                    Y = 5,
-                };
+                isDoneCheckBox.Checked = !isDoneCheckBox.Checked;
+                kb.Handled = true;
             }
         };
+
 
         dialog.Add(titleLabel, titleInput);
         dialog.Add(descriptionLabel, descriptionInput);
@@ -336,6 +317,61 @@ class Program
         var options = new JsonSerializerOptions { WriteIndented = true };
         string jsonString = JsonSerializer.Serialize(newTheme, options);
         File.WriteAllText(fileName, jsonString);
+    }
+
+    public static void OpenChangeTheme(DatabaseController db, Window window)
+    {
+        var dialog = new Dialog("Change Theme", 60, 8);
+        var light = new Button("Light");
+        light.Clicked += () => 
+        {
+            ChangeTheme("light", window, db);
+            Application.RequestStop();
+        };
+        var dark = new Button("Dark");
+        dark.Clicked += () => 
+        {
+            ChangeTheme("dark", window, db);
+            Application.RequestStop();
+        };
+
+        dialog.AddButton(light);
+        dialog.AddButton(dark);
+
+        Application.Run(dialog);
+    }
+
+    public static void ShowHelp()
+    {
+        var dialog = new Dialog("Help", 60, 15);
+        string helpMessage = """
+            Navigation:
+                Arrow keys — Move between tasks and buttons
+            Button shortcuts:
+                Enter — Accept dialog
+                Esc — Close dialog
+            App Shortcuts:
+                Ctrl+H — Show this help screen
+                Ctrl+N — Add new task
+                Ctrl+X — Close application
+        """;
+        var msg = new TextView()
+        {
+            X = 1,
+            Y = 1,
+            Width = Dim.Fill() - 2,
+            Height = Dim.Fill() - 3,
+            ReadOnly = true,
+            Text = helpMessage
+        };
+
+        var allright = new Button("Allright");
+        allright.Clicked += () => Application.RequestStop();
+
+        dialog.Add(msg);
+        dialog.AddButton(allright);
+
+        Application.Run(dialog);
     }
 
     public static int GenerateNextID(DatabaseController db)
