@@ -1,5 +1,6 @@
 using PlanCLI.Models;
 using Spectre.Console;
+using System.Globalization;
 using System.Text.RegularExpressions;
 
 namespace PlanCLI;
@@ -8,6 +9,11 @@ public class CLImode
 {
     public static void Run()
     {
+        var culture = new CultureInfo("en-GB");
+
+        CultureInfo.DefaultThreadCurrentCulture = culture;
+        CultureInfo.DefaultThreadCurrentUICulture = culture;
+        
         var db = new DatabaseController(Program.taskPath);
 
         while (true)
@@ -58,6 +64,7 @@ public class CLImode
         table.AddColumn("Id");
         table.AddColumn("Title");
         table.AddColumn("Description");
+        table.AddColumn("Date");
         table.AddColumn("Done");
 
         if (db.Items.Count == 0)
@@ -72,6 +79,7 @@ public class CLImode
                     task.Id.ToString(),
                     !string.IsNullOrEmpty(task.Title) ? task.Title : "",
                     !string.IsNullOrEmpty(task.Description) ? task.Description : "",
+                    task.Date.ToString() ?? "",
                     task.IsDone ? "[green]✓[/]" : "[red]x[/]"
                 );
             }
@@ -98,14 +106,40 @@ public class CLImode
             return;
         }
         var desc = AnsiConsole.Prompt(
-            new TextPrompt<string>("[grey][[optional]][/] [lightskyblue1]Enter task's description:[/]")
+            new TextPrompt<string>("[lightskyblue1]Enter task's description:[/] [grey][[optional]][/] ")
             .AllowEmpty());
 
+        var IsDeadline = AnsiConsole.Prompt(new SelectionPrompt<string>()
+            .Title("[lightskyblue1]Do you wan to edit deadline?[/]")
+            .AddChoices("yes", "no"));
+        DateOnly? date = new DateOnly();
+        if (IsDeadline == "yes")
+        {
+            var year = AnsiConsole.Prompt(new SelectionPrompt<int>()
+                .Title("Select a year")
+                .AddChoices(2024, 2025, 2026, 2027));
+
+            var month = AnsiConsole.Prompt(new SelectionPrompt<int>()
+                .Title("Select a month")
+                .AddChoices(Enumerable.Range(1, 12)));
+
+            var daysInMonth = DateTime.DaysInMonth(year, month);
+            var day = AnsiConsole.Prompt(new SelectionPrompt<int>()
+                .Title("Select a day")
+                .AddChoices(Enumerable.Range(1, daysInMonth)));
+
+            date = new DateOnly(year, month, day);
+        }
+        else
+        {
+            date = null;
+        }
         var newTask = new TodoItem()
         {
             Id = Program.GenerateNextID(db),
             Title = title,
             Description = desc,
+            Date = date
         };
         db.Items.Add(newTask);
         db.Save();
@@ -193,6 +227,28 @@ public class CLImode
                 }
                 return ValidationResult.Success();
             }));
+        var IsDeadline = AnsiConsole.Prompt(new SelectionPrompt<string>()
+            .Title("[lightskyblue1]Do you wan to edit deadline?[/]")
+            .AddChoices("yes", "no"));
+        var date = new DateOnly();
+        if (IsDeadline == "yes")
+        {
+            var year = AnsiConsole.Prompt(new SelectionPrompt<int>()
+                .Title("Select a year")
+                .AddChoices(2024, 2025, 2026, 2027));
+
+            var month = AnsiConsole.Prompt(new SelectionPrompt<int>()
+                .Title("Select a month")
+                .AddChoices(Enumerable.Range(1, 12)));
+
+            var daysInMonth = DateTime.DaysInMonth(year, month);
+            var day = AnsiConsole.Prompt(new SelectionPrompt<int>()
+                .Title("Select a day")
+                .AddChoices(Enumerable.Range(1, daysInMonth)));
+
+            date = new DateOnly(year, month, day);
+            item.Date = date;
+        }
         item.Title = newTitle;
         item.Description = newDescription;
         db.Save();
