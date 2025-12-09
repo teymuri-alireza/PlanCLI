@@ -358,7 +358,7 @@ class TUImode
     public static void ShowHelp()
     {
         var dialog = new Dialog("Help", 60, 20);
-        string helpMessage = """
+        string helpMessage = $"""
             Navigation:
                 Arrow keys — Move between tasks and buttons
             Button shortcuts:
@@ -371,6 +371,8 @@ class TUImode
             Change App Mode:
                 plancli --mode tui
                 plancli --mode cli
+            Current version:
+                {Program.Version}
         """;
         var msg = new TextView()
         {
