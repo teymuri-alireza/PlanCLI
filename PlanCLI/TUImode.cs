@@ -1,6 +1,7 @@
 using Terminal.Gui;
 using PlanCLI.Models;
 using System.Text.Json;
+using System.Globalization;
 
 class TUImode
 {
@@ -8,6 +9,11 @@ class TUImode
     static FrameView? container;
     public static void Run()
     {
+        var culture = new CultureInfo("en-GB");
+
+        CultureInfo.DefaultThreadCurrentCulture = culture;
+        CultureInfo.DefaultThreadCurrentUICulture = culture;
+        
         var day = DateTime.Now;
         var db = new DatabaseController(Program.taskPath);
 
@@ -70,7 +76,7 @@ class TUImode
 
     public static void NewTask(DatabaseController db, Window window)
     {
-        var dialog = new Dialog("Add Task", 60, 10);
+        var dialog = new Dialog("Add Task", 60, 12);
         var titleLabel = new Label("Title:")
         {
             X = 1,
@@ -93,9 +99,60 @@ class TUImode
             Y = Pos.Top(descriptionLabel),
             Width = 40
         };
+        var checkDate = new CheckBox("Enable deadline", false)
+        {
+            X = 1,
+            Y = 5,
+        };
+        string dateLabelText = "Date: (DD/MM/YYYY)";
+        var dateLabel = new Label(dateLabelText)
+        {
+            X = 1,
+            Y = 7
+        };
+        // align all text inputs
+        int gap = 60 - dateLabelText.Length - 19;
+        var dateInput = new DateField()
+        {
+            X = Pos.Right(dateLabel) + gap,
+            Y = Pos.Top(dateLabel),
+            Date = DateTime.Now
+        };
 
         dialog.Add(titleLabel, titleInput);
         dialog.Add(descriptionLabel, descriptionInput);
+        dialog.Add(checkDate);
+        dialog.Add(dateLabel, dateInput);
+
+        dateLabel.Y = 20;
+        dateInput.Y = 20;
+        dateLabel.Enabled = false;
+        dateInput.Enabled = false;
+
+        checkDate.KeyPress += (kb) =>
+        {
+            if (kb.KeyEvent.Key == Key.Enter)
+            {
+                if (dateLabel.Y.Equals(Pos.At(20)))
+                {
+                    dateLabel.Y = 7;
+                    dateInput.Y = 7;
+                    checkDate.Checked = true;
+                    checkDate.Text = "Disable deadline";
+                    dateLabel.Enabled = true;
+                    dateInput.Enabled = true;
+                }
+                else
+                {
+                    dateLabel.Y = 20;
+                    dateInput.Y = 20;
+                    checkDate.Checked = false;
+                    checkDate.Text = "Enable deadline";
+                    dateLabel.Enabled = false;
+                    dateInput.Enabled = false;
+                }
+            }
+        };
 
         var ok = new Button("OK");
         ok.Clicked += () =>
@@ -123,11 +180,21 @@ class TUImode
                     return;
                 }
             }
+            DateOnly? newDate;
+            if (checkDate.Checked)
+            {
+                newDate = DateOnly.FromDateTime(dateInput.Date);
+            }
+            else
+            {
+                newDate = null;
+            }
             var newTask = new TodoItem
             {
                 Id = Program.GenerateNextID(db),
                 Title = titleValue,
-                Description = !string.IsNullOrWhiteSpace(descriptionValue) ? descriptionValue : ""
+                Description = !string.IsNullOrWhiteSpace(descriptionValue) ? descriptionValue : "",
+                Date = newDate
             };
             // logic to save into database
             db.Items.Add(newTask);
@@ -174,7 +241,7 @@ class TUImode
         foreach (var task in db.Items)
         {
             // Use a plain Label instead of a CheckBox so no glyph is drawn.
-            var itemLabel = new Label($"{task.Title} {task.Description}")
+            var itemLabel = new Label($"{task.Title} {task.Description} {task.Date}")
             {
                 X = 1,
                 Y = y++,
@@ -207,7 +274,7 @@ class TUImode
 
     public static void OpenEditTaskDialog(TodoItem task, DatabaseController db, Window window)
     {
-        var dialog = new Dialog("Edit Task", 60, 12);
+        var dialog = new Dialog("Edit Task", 60, 16);
 
         var titleLabel = new Label("Title:")
         {
@@ -231,23 +298,100 @@ class TUImode
             Y = Pos.Top(descriptionLabel),
             Width = 40
         };
-        var isDoneCheckBox = new CheckBox("Mark as Done", task.IsDone)
+        string btnText = "Mark as done (press space)";
+        if (task.IsDone)
+        {
+            btnText = "Mark as Undone (press space)";
+        }
+        var isDoneCheckBox = new CheckBox(btnText, task.IsDone)
         {
             X = 1,
             Y = 5,
         };
         isDoneCheckBox.KeyPress += (kb) =>
         {
-            if (kb.KeyEvent.Key == Key.Enter)
+            if (kb.KeyEvent.Key == Key.Space)
             {
+                if (isDoneCheckBox.Text == btnText)
+                {
+                    isDoneCheckBox.Text = btnText;
+                }
+                else
+                {
+                    isDoneCheckBox.Text = btnText;
+                }
                 isDoneCheckBox.Checked = !isDoneCheckBox.Checked;
                 kb.Handled = true;
             }
         };
 
+        bool checkDateValue = true;
+        if (task.Date == null)
+        {
+            checkDateValue = false;
+        }
+        var checkDate = new CheckBox("Enable deadline", checkDateValue)
+        {
+            X = 1,
+            Y = 7,
+        };
+        string dateLabelText = "Date: (DD/MM/YYYY)";
+        var dateLabel = new Label(dateLabelText)
+        {
+            X = 1,
+            Y = 9
+        };
+        // align all text inputs
+        int gap = 60 - dateLabelText.Length - 19;
+        var dateInput = new DateField()
+        {
+            X = Pos.Right(dateLabel) + gap,
+            Y = Pos.Top(dateLabel),
+            Date = DateTime.Now
+        };
+
         dialog.Add(titleLabel, titleInput);
         dialog.Add(descriptionLabel, descriptionInput);
         dialog.Add(isDoneCheckBox);
+        dialog.Add(checkDate);
+        dialog.Add(dateLabel, dateInput);
+
+        if (checkDate.Checked == false)
+        {
+            dateLabel.Y = 20;
+            dateInput.Y = 20;
+            dateLabel.Enabled = false;
+            dateInput.Enabled = false;
+        }
+        checkDate.KeyPress += (kb) =>
+        {
+            if (kb.KeyEvent.Key == Key.Space)
+            {
+                kb.Handled = true; // Prevent Space from toggling the checkbox
+                return;
+            }
+            if (kb.KeyEvent.Key == Key.Enter)
+            {
+                if (dateLabel.Y.Equals(Pos.At(20)))
+                {
+                    dateLabel.Y = 9;
+                    dateInput.Y = 9;
+                    checkDate.Checked = true;
+                    checkDate.Text = "Disable deadline";
+                    dateLabel.Enabled = true;
+                    dateInput.Enabled = true;
+                }
+                else
+                {
+                    dateLabel.Y = 20;
+                    dateInput.Y = 20;
+                    checkDate.Checked = false;
+                    checkDate.Text = "Enable deadline";
+                    dateLabel.Enabled = false;
+                    dateInput.Enabled = false;
+                }
+            }
+        };
 
         var save = new Button("Save");
         save.Clicked += () =>
@@ -275,9 +419,19 @@ class TUImode
                     return;
                 }
             }
-            task.Title = titleInput.Text.ToString();;
-            task.Description = descriptionInput.Text.ToString();;
+            DateOnly? newDate;
+            if (checkDate.Checked)
+            {
+                newDate = DateOnly.FromDateTime(dateInput.Date);
+            }
+            else
+            {
+                newDate = null;
+            }
+            task.Title = titleInput.Text.ToString();
+            task.Description = descriptionInput.Text.ToString();
             task.IsDone = isDoneCheckBox.Checked;
+            task.Date = newDate;
             db.Save();
             BuildCheckBoxList(db, window);
             Application.RequestStop();
