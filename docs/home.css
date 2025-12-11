@@ -1,3 +1,7 @@
+body {
+    font-family: 'Newsreader';
+    font-size: 1.1em;
+}
 .navbar {
     justify-content: center;
     font-size: 18px;
@@ -8,7 +12,6 @@
 }
 .main-h1 {
     font-size: 85px;
-    font-family: 'Newsreader';
     text-decoration: underline;
 }
 .main-p1 {
