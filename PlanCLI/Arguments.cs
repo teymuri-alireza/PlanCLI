@@ -27,15 +27,15 @@ class Arguments
                 break;
             case "-c":
             case "--check":
-                CLImode.CompleteTask(db);
+                HandleComplete(args, db);
                 break;
             case "-e":
             case "--edit":
-                CLImode.EditTask(db);
+                HandleEdit(args, db);
                 break;
             case "-d":
             case "--delete":
-                CLImode.DeleteTask(db);
+                HandleDelete(args, db);
                 break;
             case "-r":
             case "--reset":
@@ -98,6 +98,61 @@ class Arguments
         db.Items.Add(newTaskItem);
         db.Save();
         AnsiConsole.MarkupLine("[green]New task added.[/]");
+    }
+
+    static void HandleComplete(string[] args, DatabaseController db)
+    {
+        if (args.Length < 2)
+        {
+            CLImode.CompleteTask(db);
+            return;
+        }
+        string Id = args[1];
+        var task = db.Items.FirstOrDefault(t => t.Id.ToString() == Id);
+        if (string.IsNullOrWhiteSpace(task?.Title))
+        {
+            AnsiConsole.MarkupLine($"[red]Task Id {Id} wasn't found![/]");
+            return;
+        }
+        task.IsDone = true;
+        db.Save();
+        AnsiConsole.MarkupLine($"[green]Task {Id} completed successfully[/]");
+    }
+
+    static void HandleEdit(string[] args, DatabaseController db)
+    {
+        if (args.Length < 2)
+        {
+            CLImode.EditTask(db);
+            return;
+        }
+        string Id = args[1];
+        var task = db.Items.FirstOrDefault(t => t.Id.ToString() == Id);
+        if (string.IsNullOrWhiteSpace(task?.Title))
+        {
+            AnsiConsole.MarkupLine($"[red]Task Id {Id} wasn't found![/]");
+            return;
+        }
+        CLImode.EditHandler(task, db);
+        AnsiConsole.MarkupLine($"[green]Task {Id} Edited successfully[/]");
+    }
+
+    static void HandleDelete(string[] args, DatabaseController db)
+    {
+        if (args.Length < 2)
+        {
+            CLImode.DeleteTask(db);
+            return;
+        }
+        string Id = args[1];
+        var task = db.Items.FirstOrDefault(t => t.Id.ToString() == Id);
+        if (string.IsNullOrWhiteSpace(task?.Title))
+        {
+            AnsiConsole.MarkupLine($"[red]Task Id {Id} wasn't found![/]");
+            return;
+        }
+        db.Delete(task);
+        AnsiConsole.MarkupLine($"[green]Task {Id} deleted successfully[/]");
     }
 
     public static void ChangeUserMode(string mode)
