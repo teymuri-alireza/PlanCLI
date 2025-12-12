@@ -13,6 +13,9 @@ class Arguments
             case "--help":
                 PrintHelp();
                 break;
+            case "-hh":
+                PrintLongHelp();
+                break;
             case "-m":
             case "--mode":
                 ModeHandler(args);
@@ -179,13 +182,49 @@ class Arguments
         Console.WriteLine("     plancli              Run in default mode if it's set");
         Console.WriteLine("     plancli -m cli       Set default to Command-Line mode (CLI)");
         Console.WriteLine("     plancli -m tui       Set default to interactive mode (TUI)");
-        AnsiConsole.MarkupLine("[green]For easier access to tasks:[/]");
+        AnsiConsole.MarkupLine("[green]Other arguments to handle tasks:[/]");
         Console.WriteLine("     plancli -l           Print the task list");
         Console.WriteLine("     plancli -a \"title\"   Add new task");
-        Console.WriteLine("     plancli -c           Complete a task");
-        Console.WriteLine("     plancli -e           Edit a task");
-        Console.WriteLine("     plancli -d           Delete a task");
+        Console.WriteLine("     plancli -c Id        Complete a task");
+        Console.WriteLine("     plancli -e Id        Edit a task");
+        Console.WriteLine("     plancli -d Id        Delete a task");
         Console.WriteLine("     plancli -r           Reset tasks list");
         Console.WriteLine("     plancli -v           Prints plancli version");
+        AnsiConsole.MarkupLine("[green]Bigger help:[/]");
+        Console.WriteLine("     plancli -hh           Prints the long version of help");
+    }
+    public static void PrintLongHelp()
+    {
+        AnsiConsole.MarkupLine("[green]Changin mode:[/]");
+        Console.WriteLine("     plancli -m cli           Set default to Command-Line mode (CLI)");
+        Console.WriteLine("     plancli --mode cli       Set default to Command-Line mode (CLI)");
+        Console.WriteLine("     plancli -m tui           Set default to interactive mode (TUI)");
+        Console.WriteLine("     plancli --mode tui       Set default to interactive mode (TUI)");
+
+        AnsiConsole.MarkupLine("[green]Print list of tasks:[/]");
+        Console.WriteLine("     plancli -l               Print the task list");
+        Console.WriteLine("     plancli --list           Print the task list");
+        AnsiConsole.MarkupLine("[green]Add new task:[/]");
+        Console.WriteLine("     plancli -a \"title\"       Add new task");
+        Console.WriteLine("     plancli --add \"title\"    Add new task");
+        Console.WriteLine("     plancli -a               Prompt for a task title to add new");
+        AnsiConsole.MarkupLine("[green]Complete a task:[/]");
+        Console.WriteLine("     plancli -c Id            Complete a task");
+        Console.WriteLine("     plancli --check Id       Complete a task");
+        Console.WriteLine("     plancli -c               Prompt for a task Id to check");
+        AnsiConsole.MarkupLine("[green]Edit a task:[/]");
+        Console.WriteLine("     plancli -e Id            Edit a task");
+        Console.WriteLine("     plancli --edit Id        Edit a task");
+        Console.WriteLine("     plancli -e               Prompt for a task Id to edit");
+        AnsiConsole.MarkupLine("[green]Delete a task:[/]");
+        Console.WriteLine("     plancli -d Id            Delete a task");
+        Console.WriteLine("     plancli --delete Id      Delete a task");
+        Console.WriteLine("     plancli -d               Prompt for a task Id to delete");
+        AnsiConsole.MarkupLine("[green]Reset tasks list:[/]");
+        Console.WriteLine("     plancli -r               Reset tasks list");
+        Console.WriteLine("     plancli --reset          Reset tasks list");
+        AnsiConsole.MarkupLine("[green]Prints plancli version:[/]");
+        Console.WriteLine("     plancli -v               Prints plancli version");
+        Console.WriteLine("     plancli --version        Prints plancli version");
     }
 }
